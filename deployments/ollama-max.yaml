@@ -1,0 +1,88 @@
+# PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ollama-data
+  labels:
+    app.kubernetes.io/part-of: linuxbot
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+  labels:
+    app.kubernetes.io/part-of: linuxbot
+spec:
+  selector:
+    matchLabels:
+      app: ollama
+  template:
+    metadata:
+      labels:
+        app: ollama
+        app.kubernetes.io/part-of: linuxbot
+    spec:
+      containers:
+      - args:
+        - serve
+        env:
+        - name: FOO
+          value: BAR
+        image: docker.io/ollama/ollama:latest
+        imagePullPolicy: Always
+        name: ollama
+        ports:
+        - containerPort: 11434
+          name: frontend
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /.ollama
+          name: ollama-data
+      volumes:
+      - name: ollama-data
+        persistentVolumeClaim:
+          claimName: ollama-data
+---
+# Service ollama
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  labels:
+    app: ollama
+    app.kubernetes.io/part-of: linuxbot
+spec:
+  selector:
+    app: ollama
+  ports:
+    - name: api
+      port: 11434
+      targetPort: 11434
+---
+# Route 
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: ollama
+  labels:
+    app: ollama
+    app.kubernetes.io/part-of: linuxbot
+spec:
+  host: ollama.apps.cluster-xv6h4.xv6h4.sandbox255.opentlc.com
+  to:
+    kind: Service
+    name: ollama
+    weight: 100
+  port:
+    targetPort: '11434'
+  # tls:
+  #   termination: edge
+  #   insecureEdgeTerminationPolicy: Redirect
+  # wildcardPolicy: None
