@@ -27,14 +27,10 @@ spec:
     metadata:
       labels:
         app: ollama
-        app.kubernetes.io/part-of: linuxbot
     spec:
       containers:
       - args:
-        - serve
-        env:
-        - name: FOO
-          value: BAR
+          - serve
         image: docker.io/ollama/ollama:latest
         imagePullPolicy: Always
         name: ollama
@@ -65,24 +61,3 @@ spec:
     - name: api
       port: 11434
       targetPort: 11434
----
-# Route 
-kind: Route
-apiVersion: route.openshift.io/v1
-metadata:
-  name: ollama
-  labels:
-    app: ollama
-    app.kubernetes.io/part-of: linuxbot
-spec:
-  host: ollama.apps.cluster-xv6h4.xv6h4.sandbox255.opentlc.com
-  to:
-    kind: Service
-    name: ollama
-    weight: 100
-  port:
-    targetPort: '11434'
-  # tls:
-  #   termination: edge
-  #   insecureEdgeTerminationPolicy: Redirect
-  # wildcardPolicy: None

@@ -3,6 +3,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: linuxbot
+  labels:
+    app.kubernetes.io/part-of: linuxbot
 spec:
   replicas: 1
   selector:
@@ -25,7 +27,7 @@ spec:
         - streamlit run app.py --server.port 8080
         env:
         - name: OLLAMA_HOST
-          value: ollama.apps.cluster-xv6h4.xv6h4.sandbox255.opentlc.com
+          value: ollama
         image: quay.io/sroecker/linuxbot-app:latest
         imagePullPolicy: Always
         name: linuxbot
